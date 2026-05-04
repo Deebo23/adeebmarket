@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Moon, Sun, Menu, X } from 'lucide-react';
+import { Search, Moon, Sun, Menu, X, LogIn, LayoutDashboard, LogOut } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
-import { categories } from '../lib/data';
+import { useStore } from '../lib/store';
 
 export default function Header() {
   const { isDark, toggleTheme } = useTheme();
@@ -11,6 +11,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { categories, isAdminAuth, logoutAdmin } = useStore();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);
@@ -25,6 +26,11 @@ export default function Header() {
       setSearchOpen(false);
       setSearchQuery('');
     }
+  };
+
+  const handleLogout = () => {
+    logoutAdmin();
+    navigate('/');
   };
 
   return (
@@ -71,7 +77,7 @@ export default function Header() {
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
                 className="p-2.5 rounded-xl transition-colors hover:bg-gold/10"
@@ -88,6 +94,57 @@ export default function Header() {
               >
                 {isDark ? <Sun size={20} /> : <Moon size={20} />}
               </button>
+
+              {/* Login / Admin Button */}
+              {isAdminAuth ? (
+                <div className="hidden sm:flex items-center gap-1.5">
+                  <Link
+                    to="/admin"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-gold/10 text-gold hover:bg-gold/20 transition-all"
+                    style={{ fontFamily: 'var(--font-heading)' }}
+                  >
+                    <LayoutDashboard size={16} />
+                    لوحة التحكم
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2.5 rounded-xl transition-colors hover:bg-red-500/10 text-red-500"
+                    aria-label="تسجيل الخروج"
+                    title="تسجيل الخروج"
+                  >
+                    <LogOut size={18} />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/admin/login"
+                  className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-navy text-white hover:bg-navy-light transition-all hover:shadow-lg hover:shadow-navy/20"
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
+                  <LogIn size={16} />
+                  تسجيل الدخول
+                </Link>
+              )}
+
+              {/* Mobile: small login icon */}
+              {isAdminAuth ? (
+                <Link
+                  to="/admin"
+                  className="sm:hidden p-2.5 rounded-xl transition-colors bg-gold/10 text-gold"
+                  aria-label="لوحة التحكم"
+                >
+                  <LayoutDashboard size={20} />
+                </Link>
+              ) : (
+                <Link
+                  to="/admin/login"
+                  className="sm:hidden p-2.5 rounded-xl transition-colors bg-navy text-white"
+                  aria-label="تسجيل الدخول"
+                >
+                  <LogIn size={20} />
+                </Link>
+              )}
+
               <button
                 onClick={() => setIsMobileOpen(true)}
                 className="lg:hidden p-2.5 rounded-xl transition-colors hover:bg-gold/10"
@@ -147,7 +204,7 @@ export default function Header() {
                 <X size={24} />
               </button>
             </div>
-            <nav className="flex flex-col gap-1 p-4" style={{ fontFamily: 'var(--font-heading)' }}>
+            <nav className="flex flex-col gap-1 p-4 flex-1" style={{ fontFamily: 'var(--font-heading)' }}>
               {[
                 { to: '/', label: 'الرئيسية' },
                 ...categories.map(c => ({ to: `/category/${c.slug}`, label: c.name })),
@@ -166,6 +223,41 @@ export default function Header() {
                 </Link>
               ))}
             </nav>
+
+            {/* Mobile Menu Footer - Login/Admin */}
+            <div className="p-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+              {isAdminAuth ? (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-gold/10 text-gold transition-colors"
+                    style={{ fontFamily: 'var(--font-heading)' }}
+                  >
+                    <LayoutDashboard size={18} />
+                    لوحة التحكم
+                  </Link>
+                  <button
+                    onClick={() => { handleLogout(); setIsMobileOpen(false); }}
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-red-500/10 text-red-500 transition-colors"
+                    style={{ fontFamily: 'var(--font-heading)' }}
+                  >
+                    <LogOut size={18} />
+                    تسجيل الخروج
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/admin/login"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl text-sm font-bold bg-navy text-white hover:bg-navy-light transition-colors"
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
+                  <LogIn size={18} />
+                  تسجيل الدخول
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}

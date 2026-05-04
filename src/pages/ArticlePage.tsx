@@ -8,10 +8,11 @@ import ShareButtons from '../components/ShareButtons';
 import TableOfContents from '../components/TableOfContents';
 import ArticleCard from '../components/ArticleCard';
 import Newsletter from '../components/Newsletter';
-import { getArticleBySlug, getLatestArticles } from '../lib/data';
+import { useStore } from '../lib/store';
 
 export default function ArticlePage() {
   const { slug } = useParams<{ slug: string }>();
+  const { getArticleBySlug, getLatestArticles } = useStore();
   const article = getArticleBySlug(slug || '');
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -37,11 +38,10 @@ export default function ArticlePage() {
     );
   }
 
-  const relatedArticles = getLatestArticles(3).filter(a => a.id !== article.id).slice(0, 3);
+  const relatedArticles = getLatestArticles(4).filter(a => a.id !== article.id).slice(0, 3);
 
   return (
     <div className="pt-24 sm:pt-28">
-      {/* Breadcrumbs */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-6">
         <Breadcrumbs items={[
           { label: article.category, to: `/category/${article.categorySlug}` },
@@ -49,7 +49,6 @@ export default function ArticlePage() {
         ]} />
       </div>
 
-      {/* Article Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -78,40 +77,27 @@ export default function ArticlePage() {
         </div>
       </motion.div>
 
-      {/* Featured Image */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
         className="max-w-5xl mx-auto px-4 sm:px-6 mb-10"
       >
-        <img
-          src={article.image}
-          alt={article.title}
-          className="w-full h-64 sm:h-96 object-cover rounded-2xl"
-        />
+        <img src={article.image} alt={article.title} className="w-full h-64 sm:h-96 object-cover rounded-2xl" />
       </motion.div>
 
-      {/* Content Area */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="lg:flex lg:gap-8">
           <article className="flex-1 min-w-0">
-            {/* Share */}
             <div className="mb-6">
               <ShareButtons title={article.title} url={`https://adeebmarket.com/article/${article.slug}`} />
             </div>
-
-            {/* TOC */}
             <TableOfContents content={article.content} />
-
-            {/* Article Content */}
             <div
               ref={contentRef}
               className="article-content"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
-
-            {/* Tags */}
             <div className="mt-8 pt-6 flex flex-wrap items-center gap-2" style={{ borderTop: '1px solid var(--border-color)' }}>
               <Tag size={16} className="text-gold" />
               {article.tags.map(tag => (
@@ -125,13 +111,9 @@ export default function ArticlePage() {
                 </Link>
               ))}
             </div>
-
-            {/* Share Bottom */}
             <div className="mt-6">
               <ShareButtons title={article.title} url={`https://adeebmarket.com/article/${article.slug}`} />
             </div>
-
-            {/* Author Box */}
             <div className="mt-8">
               <AuthorBox author={article.author} />
             </div>
@@ -139,7 +121,6 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      {/* Related Articles */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 mt-16">
         <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
           مقالات ذات صلة

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, TrendingUp, Sparkles, Flame } from 'lucide-react';
 import ArticleCard from '../components/ArticleCard';
 import Newsletter from '../components/Newsletter';
-import { articles, categories, getFeaturedArticles, getTrendingArticles, getLatestArticles } from '../lib/data';
+import { useStore } from '../lib/store';
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -12,10 +12,13 @@ const fadeUp = {
 };
 
 export default function HomePage() {
+  const { getFeaturedArticles, getTrendingArticles, getLatestArticles, categories } = useStore();
   const featured = getFeaturedArticles();
   const trending = getTrendingArticles();
   const latest = getLatestArticles(6);
-  const heroArticle = featured[0];
+  const heroArticle = featured[0] || latest[0];
+
+  if (!heroArticle) return null;
 
   return (
     <div>
@@ -51,56 +54,60 @@ export default function HomePage() {
       </section>
 
       {/* Featured Articles */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div {...fadeUp} className="flex items-center justify-between mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-              <Sparkles size={22} className="text-gold" />
-              مقالات مميزة
-            </h2>
-            <Link to="/archive" className="text-sm font-medium text-gold hover:text-gold-light transition-colors flex items-center gap-1" style={{ fontFamily: 'var(--font-heading)' }}>
-              عرض الكل <ArrowLeft size={16} />
-            </Link>
-          </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map((article, i) => (
-              <motion.div
-                key={article.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-              >
-                <ArticleCard article={article} />
-              </motion.div>
-            ))}
+      {featured.length > 0 && (
+        <section className="py-8 sm:py-12 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto">
+            <motion.div {...fadeUp} className="flex items-center justify-between mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+                <Sparkles size={22} className="text-gold" />
+                مقالات مميزة
+              </h2>
+              <Link to="/archive" className="text-sm font-medium text-gold hover:text-gold-light transition-colors flex items-center gap-1" style={{ fontFamily: 'var(--font-heading)' }}>
+                عرض الكل <ArrowLeft size={16} />
+              </Link>
+            </motion.div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featured.map((article, i) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <ArticleCard article={article} />
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Trending */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div {...fadeUp} className="flex items-center justify-between mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-              <Flame size={22} className="text-orange-500" />
-              الأكثر رواجاً
-            </h2>
-          </motion.div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {trending.map((article, i) => (
-              <motion.div
-                key={article.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-              >
-                <ArticleCard article={article} variant="horizontal" />
-              </motion.div>
-            ))}
+      {trending.length > 0 && (
+        <section className="py-8 sm:py-12 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto">
+            <motion.div {...fadeUp} className="flex items-center justify-between mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+                <Flame size={22} className="text-orange-500" />
+                الأكثر رواجاً
+              </h2>
+            </motion.div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {trending.map((article, i) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <ArticleCard article={article} variant="horizontal" />
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Latest Articles */}
       <section className="py-8 sm:py-12 px-4 sm:px-6">

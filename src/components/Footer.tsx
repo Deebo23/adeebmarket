@@ -1,13 +1,25 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
-import { categories } from '../lib/data';
+import { Heart, CheckCircle, AlertCircle } from 'lucide-react';
+import { useStore } from '../lib/store';
 
 export default function Footer() {
+  const { categories, addSubscriber } = useStore();
+  const [footerEmail, setFooterEmail] = useState('');
+  const [footerStatus, setFooterStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+
+  const handleFooterSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = addSubscriber(footerEmail);
+    setFooterStatus({ type: result.success ? 'success' : 'error', msg: result.message });
+    if (result.success) setFooterEmail('');
+    setTimeout(() => setFooterStatus(null), 4000);
+  };
+
   return (
     <footer className="relative mt-20" style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)' }}>
-      {/* Gold accent line */}
       <div className="h-1 bg-gradient-to-l from-gold via-gold-light to-sky-accent" />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* About */}
@@ -76,22 +88,43 @@ export default function Footer() {
             <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
               اشترك للحصول على أحدث المقالات والنصائح مباشرة في بريدك.
             </p>
-            <form className="flex flex-col gap-2" onSubmit={e => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="بريدك الإلكتروني"
-                className="px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{
-                  background: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)',
-                  fontFamily: 'var(--font-body)',
-                }}
-              />
-              <button className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-navy text-white hover:bg-navy-light transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>
-                اشتراك
-              </button>
-            </form>
+
+            {footerStatus ? (
+              <div
+                className={`flex items-center gap-2 p-3 rounded-xl text-xs font-semibold ${
+                  footerStatus.type === 'success'
+                    ? 'bg-green-500/10 text-green-600'
+                    : 'bg-red-500/10 text-red-500'
+                }`}
+              >
+                {footerStatus.type === 'success' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+                {footerStatus.msg}
+              </div>
+            ) : (
+              <form className="flex flex-col gap-2" onSubmit={handleFooterSubscribe}>
+                <input
+                  type="email"
+                  required
+                  value={footerEmail}
+                  onChange={e => setFooterEmail(e.target.value)}
+                  placeholder="بريدك الإلكتروني"
+                  className="px-4 py-2.5 rounded-xl text-sm outline-none"
+                  style={{
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-navy text-white hover:bg-navy-light transition-colors"
+                  style={{ fontFamily: 'var(--font-heading)' }}
+                >
+                  اشتراك
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
@@ -103,6 +136,7 @@ export default function Footer() {
             بواسطة Adeeb Ali
           </p>
           <div className="flex gap-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <Link to="/admin/login" className="hover:text-gold transition-colors">لوحة التحكم</Link>
             <a href="#" className="hover:text-gold transition-colors">سياسة الخصوصية</a>
             <a href="#" className="hover:text-gold transition-colors">شروط الاستخدام</a>
           </div>

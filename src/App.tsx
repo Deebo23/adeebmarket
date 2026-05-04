@@ -10,6 +10,8 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import SearchPage from './pages/SearchPage';
 import ArchivePage from './pages/ArchivePage';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 function AppContent() {
   return (
@@ -25,6 +27,8 @@ function AppContent() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/archive" element={<ArchivePage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </main>
       <Footer />
