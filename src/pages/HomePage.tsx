@@ -4,7 +4,7 @@ import { ArrowLeft, Clock, TrendingUp, Sparkles, Flame, Gift, Download, Star } f
 import ArticleCard from '../components/ArticleCard';
 import Newsletter from '../components/Newsletter';
 import { useStore } from '../lib/store';
-import { products } from '../lib/products';
+// products loaded from store
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -13,7 +13,7 @@ const fadeUp = {
 };
 
 export default function HomePage() {
-  const { getFeaturedArticles, getTrendingArticles, getLatestArticles, categories } = useStore();
+  const { getFeaturedArticles, getTrendingArticles, getLatestArticles, categories, freeProducts: products } = useStore();
   const featured = getFeaturedArticles();
   const trending = getTrendingArticles();
   const latest = getLatestArticles(6);

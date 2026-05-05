@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Article, Author, Category } from './data';
 import { articles as defaultArticles, author as defaultAuthor, categories as defaultCategories } from './data';
+import { products as defaultFreeProducts } from './products';
+import { paidProducts as defaultPaidProducts } from './paidProducts';
 import type { MediaItem } from '../components/MediaUploader';
 
 export type { MediaItem };
@@ -144,6 +146,8 @@ interface SiteStore {
   subscribers: Subscriber[];
   mediaLibrary: MediaItem[];
   products: Product[];
+  freeProducts: any[];
+  paidProducts: any[];
   siteSettings: SiteSettings;
   isAdminAuth: boolean;
   adminPassword: string;
@@ -173,6 +177,14 @@ interface SiteStore {
   removeProduct: (id: string) => void;
   getProductBySlug: (slug: string) => Product | undefined;
 
+  addFreeProduct: (product: any) => void;
+  updateFreeProduct: (id: string, data: any) => void;
+  removeFreeProduct: (id: string) => void;
+
+  addPaidProduct: (product: any) => void;
+  updatePaidProduct: (id: string, data: any) => void;
+  removePaidProduct: (id: string) => void;
+
   updateSiteSettings: (data: Partial<SiteSettings>) => void;
 
   exportData: () => string;
@@ -197,6 +209,8 @@ export const useStore = create<SiteStore>()(
       subscribers: [],
       mediaLibrary: [],
       products: [],
+      freeProducts: defaultFreeProducts as any[],
+      paidProducts: defaultPaidProducts as any[],
       siteSettings: defaultSettings,
       isAdminAuth: false,
       adminPassword: 'adeeb2025',
@@ -232,23 +246,33 @@ export const useStore = create<SiteStore>()(
       removeProduct: (id) => set(s => ({ products: s.products.filter(p => p.id !== id) })),
       getProductBySlug: (slug) => get().products.find(p => p.slug === slug),
 
+      // Free Products
+      addFreeProduct: (p: any) => set(s => ({ freeProducts: [p, ...s.freeProducts] })),
+      updateFreeProduct: (id: string, d: any) => set(s => ({ freeProducts: s.freeProducts.map((p: any) => p.id === id ? { ...p, ...d } : p) })),
+      removeFreeProduct: (id: string) => set(s => ({ freeProducts: s.freeProducts.filter((p: any) => p.id !== id) })),
+
+      // Paid Products
+      addPaidProduct: (p: any) => set(s => ({ paidProducts: [p, ...s.paidProducts] })),
+      updatePaidProduct: (id: string, d: any) => set(s => ({ paidProducts: s.paidProducts.map((p: any) => p.id === id ? { ...p, ...d } : p) })),
+      removePaidProduct: (id: string) => set(s => ({ paidProducts: s.paidProducts.filter((p: any) => p.id !== id) })),
+
       updateSiteSettings: (d) => set(s => ({ siteSettings: { ...s.siteSettings, ...d } })),
 
       exportData: () => {
-        const { articles, author, categories, subscribers, mediaLibrary, products, siteSettings } = get();
-        return JSON.stringify({ articles, author, categories, subscribers, mediaLibrary, products, siteSettings, exportDate: new Date().toISOString(), version: '3.0' }, null, 2);
+        const { articles, author, categories, subscribers, mediaLibrary, products, freeProducts, paidProducts, siteSettings } = get();
+        return JSON.stringify({ articles, author, categories, subscribers, mediaLibrary, products, freeProducts, paidProducts, siteSettings, exportDate: new Date().toISOString(), version: '4.0' }, null, 2);
       },
       importData: (json) => {
         try {
           const d = JSON.parse(json);
           if (d.articles && d.author && d.categories) {
-            set({ articles: d.articles, author: d.author, categories: d.categories, subscribers: d.subscribers || [], mediaLibrary: d.mediaLibrary || [], products: d.products || [], siteSettings: d.siteSettings ? { ...defaultSettings, ...d.siteSettings } : defaultSettings });
+            set({ articles: d.articles, author: d.author, categories: d.categories, subscribers: d.subscribers || [], mediaLibrary: d.mediaLibrary || [], products: d.products || [], freeProducts: d.freeProducts || defaultFreeProducts as any[], paidProducts: d.paidProducts || defaultPaidProducts as any[], siteSettings: d.siteSettings ? { ...defaultSettings, ...d.siteSettings } : defaultSettings });
             return true;
           }
           return false;
         } catch { return false; }
       },
-      resetToDefaults: () => set({ articles: defaultArticles, author: defaultAuthor, categories: defaultCategories, subscribers: [], mediaLibrary: [], products: [], siteSettings: defaultSettings }),
+      resetToDefaults: () => set({ articles: defaultArticles, author: defaultAuthor, categories: defaultCategories, subscribers: [], mediaLibrary: [], products: [], freeProducts: defaultFreeProducts as any[], paidProducts: defaultPaidProducts as any[], siteSettings: defaultSettings }),
 
       getArticleBySlug: (slug) => get().articles.find(a => a.slug === slug),
       getArticlesByCategory: (cs) => get().articles.filter(a => a.categorySlug === cs),
@@ -260,7 +284,7 @@ export const useStore = create<SiteStore>()(
     }),
     {
       name: 'adeeb-market-store',
-      partialize: (s) => ({ articles: s.articles, author: s.author, categories: s.categories, subscribers: s.subscribers, mediaLibrary: s.mediaLibrary, products: s.products, siteSettings: s.siteSettings, adminPassword: s.adminPassword }),
+      partialize: (s) => ({ articles: s.articles, author: s.author, categories: s.categories, subscribers: s.subscribers, mediaLibrary: s.mediaLibrary, products: s.products, freeProducts: s.freeProducts, paidProducts: s.paidProducts, siteSettings: s.siteSettings, adminPassword: s.adminPassword }),
     }
   )
 );

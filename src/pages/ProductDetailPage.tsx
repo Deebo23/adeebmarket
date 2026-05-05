@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Download, Star, Check, FileText, BookOpen, Layout, Wrench, CheckSquare, Share2, ArrowLeft } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Newsletter from '../components/Newsletter';
-import { getProductBySlug, products } from '../lib/products';
+import { useStore } from '../lib/store';
 
 const typeLabels: Record<string, { label: string; icon: any; color: string }> = {
   ebook: { label: 'كتاب إلكتروني', icon: BookOpen, color: 'text-blue-500' },
@@ -15,7 +15,9 @@ const typeLabels: Record<string, { label: string; icon: any; color: string }> = 
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const product = getProductBySlug(slug || '');
+  const { freeProducts } = useStore();
+  const product = freeProducts.find((p: any) => p.slug === (slug || '')) as any;
+  const products = freeProducts;
   const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
@@ -31,7 +33,7 @@ export default function ProductDetailPage() {
 
   const typeInfo = typeLabels[product.type];
   const TypeIcon = typeInfo.icon;
-  const otherProducts = products.filter(p => p.id !== product.id).slice(0, 3);
+  const otherProducts = products.filter((p: any) => p.id !== product.id).slice(0, 3);
 
   const handleDirectDownload = () => {
     setDownloaded(true);
@@ -103,7 +105,7 @@ export default function ProductDetailPage() {
             <div className="mb-8">
               <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>ماذا يتضمن:</h3>
               <ul className="space-y-2">
-                {product.features.map((f, i) => (
+                {product.features.map((f: any, i: number) => (
                   <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     <Check size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                     {f}
@@ -197,7 +199,7 @@ export default function ProductDetailPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherProducts.map((p, i) => {
+            {otherProducts.map((p: any, i: number) => {
               const ti = typeLabels[p.type];
               return (
                 <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>

@@ -4,11 +4,12 @@ import { motion } from 'framer-motion';
 import { MessageCircle, ExternalLink, Check, Crown, Shield, ArrowLeft, Star, Sparkles } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Newsletter from '../components/Newsletter';
-import { getPaidProductBySlug, paidProducts } from '../lib/paidProducts';
+import { useStore } from '../lib/store';
 
 export default function PremiumProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const product = getPaidProductBySlug(slug || '');
+  const { paidProducts } = useStore();
+  const product = paidProducts.find((p: any) => p.slug === (slug || '')) as any;
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
@@ -22,7 +23,7 @@ export default function PremiumProductDetailPage() {
   }
 
   const whatsappUrl = `https://wa.me/${product.whatsappNumber}?text=${encodeURIComponent(product.whatsappMessage)}`;
-  const otherProducts = paidProducts.filter(p => p.id !== product.id).slice(0, 3);
+  const otherProducts = paidProducts.filter((p: any) => p.id !== product.id).slice(0, 3);
 
   return (
     <div className="pt-24 sm:pt-28">
@@ -91,7 +92,7 @@ export default function PremiumProductDetailPage() {
             <div className="mb-6">
               <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>ماذا يتضمن:</h3>
               <ul className="space-y-2">
-                {product.features.map((f, i) => (
+                {product.features.map((f: any, i: number) => (
                   <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     <Check size={16} className="text-green-500 mt-0.5 flex-shrink-0" />
                     {f}
@@ -152,7 +153,7 @@ export default function PremiumProductDetailPage() {
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {otherProducts.map((p, i) => (
+              {otherProducts.map((p: any, i: number) => (
                 <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
                   <Link to={`/store/premium/${p.slug}`} className="glass-card rounded-2xl overflow-hidden group flex flex-col h-full">
                     <div className="relative h-44 overflow-hidden">

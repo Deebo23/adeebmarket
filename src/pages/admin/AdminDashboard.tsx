@@ -7,7 +7,7 @@ import {
   Settings, ChevronLeft, Download, Upload, RotateCcw,
   Lock, Shield, Database, AlertTriangle, CheckCircle,
   Mail, Users, Copy, Film, Camera, FileText as FileDoc, ShoppingBag, ExternalLink,
-  Palette
+  Palette, Gift, Crown
 } from 'lucide-react';
 import { useStore } from '../../lib/store';
 import ImageUploader from '../../components/ImageUploader';
@@ -946,7 +946,7 @@ function MediaLibraryTab() {
 
 /* ====== Products Tab ====== */
 function ProductsTab() {
-  const { products, addProduct, updateProduct, removeProduct } = useStore();
+  const { products, addProduct, updateProduct, removeProduct, freeProducts, addFreeProduct, updateFreeProduct, removeFreeProduct, paidProducts: paidProds, addPaidProduct, updatePaidProduct, removePaidProduct } = useStore();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -1147,7 +1147,240 @@ function ProductsTab() {
           </div>
         )}
       </div>
+
+      {/* ===== FREE PRODUCTS SECTION ===== */}
+      <div className="mt-12 pt-8" style={{ borderTop: '2px solid var(--border-color)' }}>
+        <FreeProductsManager
+          products={freeProducts}
+          onAdd={addFreeProduct}
+          onUpdate={updateFreeProduct}
+          onRemove={removeFreeProduct}
+        />
+      </div>
+
+      {/* ===== PAID PRODUCTS SECTION ===== */}
+      <div className="mt-12 pt-8" style={{ borderTop: '2px solid var(--border-color)' }}>
+        <PaidProductsManager
+          products={paidProds}
+          onAdd={addPaidProduct}
+          onUpdate={updatePaidProduct}
+          onRemove={removePaidProduct}
+        />
+      </div>
     </motion.div>
+  );
+}
+
+/* ====== Free Products Manager ====== */
+function FreeProductsManager({ products, onAdd, onUpdate, onRemove }: { products: any[]; onAdd: (p: any) => void; onUpdate: (id: string, d: any) => void; onRemove: (id: string) => void }) {
+  const [editId, setEditId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [form, setForm] = useState<any>({ title: '', slug: '', description: '', longDescription: '', image: '', category: '', type: 'ebook', format: '', pages: '', features: '', downloadUrl: '#', downloads: 0, rating: 4.8 });
+
+  const inputStyle = { background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontFamily: 'var(--font-body)' };
+
+  const startNew = () => { setForm({ title: '', slug: '', description: '', longDescription: '', image: '/images/products/ebook-marketing.png', category: '', type: 'ebook', format: 'PDF', pages: '', features: '', downloadUrl: '#', downloads: 0, rating: 4.8 }); setEditId(null); setShowForm(true); };
+  const startEdit = (p: any) => { setForm({ ...p, features: Array.isArray(p.features) ? p.features.join(', ') : p.features || '' }); setEditId(p.id); setShowForm(true); };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = { ...form, id: editId || String(Date.now()), slug: form.slug || form.title.toLowerCase().replace(/\s+/g, '-').substring(0, 60), features: typeof form.features === 'string' ? form.features.split(',').map((f: string) => f.trim()).filter(Boolean) : form.features };
+    if (editId) onUpdate(editId, data); else onAdd(data);
+    setShowForm(false); setEditId(null);
+  };
+
+  const copyLink = (slug: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/products/${slug}`);
+    setCopiedId(slug);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  if (showForm) {
+    return (
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => { setShowForm(false); setEditId(null); }} className="p-2 rounded-lg hover:bg-gold/10" style={{ color: 'var(--text-muted)' }}><ChevronLeft size={18} /></button>
+          <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{editId ? 'تعديل منتج مجاني' : 'منتج مجاني جديد'}</h3>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>اسم المنتج *</label><input type="text" required value={form.title} onChange={e => setForm((f: any) => ({ ...f, title: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} /></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>التصنيف *</label><input type="text" required value={form.category} onChange={e => setForm((f: any) => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} /></div>
+          </div>
+          <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>الوصف *</label><textarea required rows={2} value={form.description} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} /></div>
+          <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>الوصف التفصيلي (HTML)</label><textarea rows={5} value={form.longDescription} onChange={e => setForm((f: any) => ({ ...f, longDescription: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-y font-mono" style={inputStyle} /></div>
+          <ImageUploader value={form.image} onChange={(url) => setForm((f: any) => ({ ...f, image: url }))} label="أيقونة/صورة المنتج" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>النوع</label>
+              <select value={form.type} onChange={e => setForm((f: any) => ({ ...f, type: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle}>
+                <option value="ebook">📚 كتاب إلكتروني</option><option value="template">🎨 قالب</option><option value="toolkit">🧰 حقيبة أدوات</option><option value="checklist">✅ قائمة فحص</option>
+              </select></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>الصيغة</label><input type="text" value={form.format} onChange={e => setForm((f: any) => ({ ...f, format: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="PDF" /></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>الصفحات</label><input type="text" value={form.pages || ''} onChange={e => setForm((f: any) => ({ ...f, pages: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="45 صفحة" /></div>
+          </div>
+          <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>المميزات (الكلمات المفتاحية) <span className="font-normal" style={{ color: 'var(--text-muted)' }}>(مفصولة بفواصل)</span></label><input type="text" value={form.features} onChange={e => setForm((f: any) => ({ ...f, features: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="200+ صفحة, أمثلة عملية, تحديثات مجانية" /></div>
+          <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>رابط التحميل</label><input type="text" value={form.downloadUrl} onChange={e => setForm((f: any) => ({ ...f, downloadUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none font-mono" dir="ltr" style={inputStyle} placeholder="https://drive.google.com/..." /></div>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" className="px-6 py-2.5 rounded-xl text-sm font-bold bg-green-600 text-white hover:bg-green-700 transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>{editId ? 'حفظ التعديلات' : 'إضافة المنتج'}</button>
+            <button type="button" onClick={() => { setShowForm(false); setEditId(null); }} className="px-4 py-2.5 rounded-xl text-sm" style={{ color: 'var(--text-muted)' }}>إلغاء</button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+          <Gift size={18} className="text-green-500" /> المنتجات المجانية ({products.length})
+        </h3>
+        <button onClick={startNew} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>
+          <Plus size={14} /> منتج مجاني جديد
+        </button>
+      </div>
+      {products.length === 0 ? (
+        <div className="text-center py-8 glass-card rounded-xl">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>لا توجد منتجات مجانية بعد. أضف أول منتج!</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {products.map((p: any) => (
+            <div key={p.id} className="glass-card rounded-xl p-3 flex items-center gap-3">
+              <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-contain flex-shrink-0" style={{ background: 'var(--bg-primary)' }} />
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{p.title}</h4>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.category} · {p.format || 'PDF'}</span>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Link to={`/products/${p.slug}`} className="p-1.5 rounded-lg hover:bg-gold/10 transition-colors text-sky-accent" title="معاينة"><Eye size={14} /></Link>
+                <button onClick={() => copyLink(p.slug)} className="p-1.5 rounded-lg hover:bg-gold/10 transition-colors" title="نسخ الرابط">
+                  {copiedId === p.slug ? <CheckCircle size={14} className="text-green-500" /> : <Copy size={14} className="text-gold" />}
+                </button>
+                <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg hover:bg-gold/10 transition-colors text-gold" title="تعديل"><Edit3 size={14} /></button>
+                {deleteConfirm === p.id ? (
+                  <><button onClick={() => { onRemove(p.id); setDeleteConfirm(null); }} className="px-2 py-1 rounded text-xs bg-red-500 text-white">حذف</button><button onClick={() => setDeleteConfirm(null)} className="px-2 py-1 rounded text-xs" style={{ color: 'var(--text-muted)' }}>✕</button></>
+                ) : (
+                  <button onClick={() => setDeleteConfirm(p.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors text-red-500" title="حذف"><Trash2 size={14} /></button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ====== Paid Products Manager ====== */
+function PaidProductsManager({ products, onAdd, onUpdate, onRemove }: { products: any[]; onAdd: (p: any) => void; onUpdate: (id: string, d: any) => void; onRemove: (id: string) => void }) {
+  const [editId, setEditId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [form, setForm] = useState<any>({ title: '', slug: '', description: '', longDescription: '', image: '', category: '', price: '', oldPrice: '', currency: 'ر.س', features: '', externalUrl: '', whatsappNumber: '966500000000', whatsappMessage: '', badge: '', inStock: true });
+
+  const inputStyle = { background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontFamily: 'var(--font-body)' };
+
+  const startNew = () => { setForm({ title: '', slug: '', description: '', longDescription: '', image: '/images/hero-marketing.jpg', category: '', price: '', oldPrice: '', currency: 'ر.س', features: '', externalUrl: '', whatsappNumber: '966500000000', whatsappMessage: '', badge: '', inStock: true }); setEditId(null); setShowForm(true); };
+  const startEdit = (p: any) => { setForm({ ...p, features: Array.isArray(p.features) ? p.features.join(', ') : p.features || '' }); setEditId(p.id); setShowForm(true); };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = { ...form, id: editId || 'p' + Date.now(), slug: form.slug || form.title.toLowerCase().replace(/\s+/g, '-').substring(0, 60), features: typeof form.features === 'string' ? form.features.split(',').map((f: string) => f.trim()).filter(Boolean) : form.features, whatsappMessage: form.whatsappMessage || `مرحباً، أرغب في شراء ${form.title}` };
+    if (editId) onUpdate(editId, data); else onAdd(data);
+    setShowForm(false); setEditId(null);
+  };
+
+  const copyLink = (slug: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/store/premium/${slug}`);
+    setCopiedId(slug);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  if (showForm) {
+    return (
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => { setShowForm(false); setEditId(null); }} className="p-2 rounded-lg hover:bg-gold/10" style={{ color: 'var(--text-muted)' }}><ChevronLeft size={18} /></button>
+          <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{editId ? 'تعديل منتج مدفوع' : 'منتج مدفوع جديد'}</h3>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>اسم المنتج *</label><input type="text" required value={form.title} onChange={e => setForm((f: any) => ({ ...f, title: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} /></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>التصنيف *</label><input type="text" required value={form.category} onChange={e => setForm((f: any) => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} /></div>
+          </div>
+          <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>الوصف *</label><textarea required rows={2} value={form.description} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} /></div>
+          <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>الوصف التفصيلي (HTML)</label><textarea rows={5} value={form.longDescription} onChange={e => setForm((f: any) => ({ ...f, longDescription: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-y font-mono" style={inputStyle} /></div>
+          <ImageUploader value={form.image} onChange={(url) => setForm((f: any) => ({ ...f, image: url }))} label="أيقونة/صورة المنتج" />
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>السعر *</label><input type="text" required value={form.price} onChange={e => setForm((f: any) => ({ ...f, price: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="299" /></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>السعر القديم</label><input type="text" value={form.oldPrice || ''} onChange={e => setForm((f: any) => ({ ...f, oldPrice: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="499" /></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>العملة</label><input type="text" value={form.currency} onChange={e => setForm((f: any) => ({ ...f, currency: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="ر.س" /></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>شارة</label><input type="text" value={form.badge || ''} onChange={e => setForm((f: any) => ({ ...f, badge: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="الأكثر مبيعاً" /></div>
+          </div>
+          <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>المميزات / الكلمات المفتاحية <span className="font-normal" style={{ color: 'var(--text-muted)' }}>(مفصولة بفواصل)</span></label><input type="text" value={form.features} onChange={e => setForm((f: any) => ({ ...f, features: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} placeholder="24 ساعة محتوى, تطبيقات عملية, شهادة إتمام" /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>رابط الشراء الخارجي</label><input type="url" value={form.externalUrl || ''} onChange={e => setForm((f: any) => ({ ...f, externalUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none font-mono" dir="ltr" style={inputStyle} /></div>
+            <div><label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>رقم الواتساب</label><input type="text" value={form.whatsappNumber} onChange={e => setForm((f: any) => ({ ...f, whatsappNumber: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none font-mono" dir="ltr" style={inputStyle} placeholder="966500000000" /></div>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.inStock} onChange={e => setForm((f: any) => ({ ...f, inStock: e.target.checked }))} className="w-4 h-4 rounded accent-green-500" /><span className="text-sm" style={{ color: 'var(--text-primary)' }}>✅ متوفر للبيع</span></label>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" className="px-6 py-2.5 rounded-xl text-sm font-bold bg-gold text-navy-dark hover:bg-gold-light transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>{editId ? 'حفظ التعديلات' : 'إضافة المنتج'}</button>
+            <button type="button" onClick={() => { setShowForm(false); setEditId(null); }} className="px-4 py-2.5 rounded-xl text-sm" style={{ color: 'var(--text-muted)' }}>إلغاء</button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+          <Crown size={18} className="text-gold" /> منتجات أديب ماركت ({products.length})
+        </h3>
+        <button onClick={startNew} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gold text-navy-dark hover:bg-gold-light transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>
+          <Plus size={14} /> منتج مدفوع جديد
+        </button>
+      </div>
+      {products.length === 0 ? (
+        <div className="text-center py-8 glass-card rounded-xl">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>لا توجد منتجات مدفوعة بعد. أضف أول منتج!</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {products.map((p: any) => (
+            <div key={p.id} className="glass-card rounded-xl p-3 flex items-center gap-3">
+              <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{p.title}</h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gold">{p.price} {p.currency}</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.category}</span>
+                  {p.badge && <span className="text-xs px-1.5 py-0.5 rounded bg-gold/10 text-gold">{p.badge}</span>}
+                  {!p.inStock && <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/10 text-red-500">غير متوفر</span>}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Link to={`/store/premium/${p.slug}`} className="p-1.5 rounded-lg hover:bg-gold/10 transition-colors text-sky-accent" title="معاينة"><Eye size={14} /></Link>
+                <button onClick={() => copyLink(p.slug)} className="p-1.5 rounded-lg hover:bg-gold/10 transition-colors" title="نسخ الرابط">
+                  {copiedId === p.slug ? <CheckCircle size={14} className="text-green-500" /> : <Copy size={14} className="text-gold" />}
+                </button>
+                <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg hover:bg-gold/10 transition-colors text-gold" title="تعديل"><Edit3 size={14} /></button>
+                {deleteConfirm === p.id ? (
+                  <><button onClick={() => { onRemove(p.id); setDeleteConfirm(null); }} className="px-2 py-1 rounded text-xs bg-red-500 text-white">حذف</button><button onClick={() => setDeleteConfirm(null)} className="px-2 py-1 rounded text-xs" style={{ color: 'var(--text-muted)' }}>✕</button></>
+                ) : (
+                  <button onClick={() => setDeleteConfirm(p.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors text-red-500" title="حذف"><Trash2 size={14} /></button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

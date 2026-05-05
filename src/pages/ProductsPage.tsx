@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Download, Star, Gift, BookOpen, Layout, Wrench, CheckSquare, ArrowLeft } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Newsletter from '../components/Newsletter';
-import { products } from '../lib/products';
+import { useStore } from '../lib/store';
 
 const typeLabels: Record<string, { label: string; icon: any; color: string }> = {
   ebook: { label: 'كتاب إلكتروني', icon: BookOpen, color: 'text-blue-500 bg-blue-500/10' },
@@ -14,11 +14,12 @@ const typeLabels: Record<string, { label: string; icon: any; color: string }> = 
 };
 
 export default function ProductsPage() {
+  const { freeProducts: products } = useStore();
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const [filter, setFilter] = useState('all');
 
-  const filtered = filter === 'all' ? products : products.filter(p => p.type === filter);
-  const totalDownloads = products.reduce((sum, p) => sum + p.downloads, 0);
+  const filtered = filter === 'all' ? products : products.filter((p: any) => p.type === filter);
+  const totalDownloads = products.reduce((sum: number, p: any) => sum + (p.downloads || 0), 0);
 
   return (
     <div className="pt-24 sm:pt-28">

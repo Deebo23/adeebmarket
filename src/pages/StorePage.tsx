@@ -6,10 +6,10 @@ import {
   MessageCircle, ExternalLink, Sparkles
 } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { products } from '../lib/products';
-import { paidProducts } from '../lib/paidProducts';
+import { useStore } from '../lib/store';
 
 export default function StorePage() {
+  const { freeProducts: products, paidProducts } = useStore();
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (

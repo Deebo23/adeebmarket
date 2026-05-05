@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import { Crown, MessageCircle, ExternalLink, Star, Sparkles, Shield, ArrowLeft } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import Newsletter from '../components/Newsletter';
-import { paidProducts } from '../lib/paidProducts';
+import { useStore } from '../lib/store';
 
 export default function PremiumProductsPage() {
+  const { paidProducts } = useStore();
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
@@ -74,7 +75,7 @@ export default function PremiumProductsPage() {
 
                   {/* Features Preview */}
                   <div className="flex flex-wrap gap-1 mb-4">
-                    {product.features.slice(0, 3).map((f, fi) => (
+                    {product.features.slice(0, 3).map((f: any, fi: number) => (
                       <span key={fi} className="text-xs px-2 py-0.5 rounded-lg" style={{ background: 'var(--bg-primary)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
                         ✓ {f}
                       </span>
