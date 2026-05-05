@@ -6,11 +6,13 @@ import {
   Edit3, Trash2, LogOut, Home, Eye, Star, TrendingUp,
   Settings, ChevronLeft, Download, Upload, RotateCcw,
   Lock, Shield, Database, AlertTriangle, CheckCircle,
-  Mail, Users, Copy
+  Mail, Users, Copy, Film, Camera, FileText as FileDoc
 } from 'lucide-react';
 import { useStore } from '../../lib/store';
+import ImageUploader from '../../components/ImageUploader';
+import MediaUploader, { MediaCard } from '../../components/MediaUploader';
 
-type Tab = 'overview' | 'articles' | 'new-article' | 'edit-article' | 'categories' | 'profile' | 'subscribers' | 'settings';
+type Tab = 'overview' | 'articles' | 'new-article' | 'edit-article' | 'categories' | 'profile' | 'media' | 'subscribers' | 'settings';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -34,6 +36,7 @@ export default function AdminDashboard() {
     { id: 'new-article' as Tab, label: 'مقال جديد', icon: <Plus size={18} /> },
     { id: 'categories' as Tab, label: 'التصنيفات', icon: <FolderOpen size={18} /> },
     { id: 'profile' as Tab, label: 'الملف الشخصي', icon: <User size={18} /> },
+    { id: 'media' as Tab, label: 'الوسائط', icon: <Film size={18} /> },
     { id: 'subscribers' as Tab, label: `المشتركين (${subscribers.length})`, icon: <Mail size={18} /> },
     { id: 'settings' as Tab, label: 'الإعدادات', icon: <Settings size={18} /> },
   ];
@@ -97,6 +100,7 @@ export default function AdminDashboard() {
             )}
             {activeTab === 'categories' && <CategoriesTab />}
             {activeTab === 'profile' && <ProfileTab author={author} />}
+            {activeTab === 'media' && <MediaLibraryTab />}
             {activeTab === 'subscribers' && <SubscribersTab />}
             {activeTab === 'settings' && <SettingsTab />}
           </div>
@@ -277,7 +281,7 @@ function ArticleForm({ articleId, onDone }: { articleId?: string; onDone: () => 
 
   const inputStyle = { background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontFamily: 'var(--font-body)' };
 
-  const availableImages = [
+  const presetImages = [
     '/images/hero-ai.jpg', '/images/hero-marketing.jpg', '/images/seo.jpg',
     '/images/ecommerce.jpg', '/images/social-media.jpg', '/images/content-creation.jpg',
     '/images/startup.jpg', '/images/email-marketing.jpg', '/images/ai-robot.jpg', '/images/team.jpg',
@@ -326,17 +330,13 @@ function ArticleForm({ articleId, onDone }: { articleId?: string; onDone: () => 
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>صورة المقال</label>
-          <div className="grid grid-cols-5 gap-2 mb-2">
-            {availableImages.map(img => (
-              <button key={img} type="button" onClick={() => setForm(f => ({ ...f, image: img }))} className={`rounded-lg overflow-hidden border-2 transition-all ${form.image === img ? 'border-gold scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}>
-                <img src={img} alt="" className="w-full h-14 object-cover" />
-              </button>
-            ))}
-          </div>
-          <input type="text" value={form.image} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} className="w-full px-4 py-2 rounded-xl text-xs outline-none font-mono" dir="ltr" style={inputStyle} placeholder="أو أدخل رابط صورة مخصص" />
-        </div>
+        <ImageUploader
+          value={form.image}
+          onChange={(url) => setForm(f => ({ ...f, image: url }))}
+          presetImages={presetImages}
+          label="صورة المقال"
+          aspectHint="يُفضل 16:9 أفقية"
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
@@ -498,15 +498,14 @@ function ProfileTab({ author }: { author: any }) {
       )}
 
       <div className="glass-card rounded-2xl p-6 sm:p-8">
-        <div className="flex items-center gap-4 mb-8">
-          <img src={form.avatar} alt="" className="w-20 h-20 rounded-2xl object-cover ring-4 ring-gold/20" />
-          <div>
-            <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{form.name}</h3>
-            <p className="text-sm text-gold">{form.role}</p>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-5">
+          <ImageUploader
+            value={form.avatar}
+            onChange={(url) => setForm(f => ({ ...f, avatar: url }))}
+            label="الصورة الشخصية"
+            aspectHint="يُفضل مربعة 1:1"
+          />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>الاسم</label>
@@ -516,10 +515,6 @@ function ProfileTab({ author }: { author: any }) {
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>المسمى الوظيفي</label>
               <input type="text" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={inputStyle} />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>رابط الصورة</label>
-            <input type="text" value={form.avatar} onChange={e => setForm(f => ({ ...f, avatar: e.target.value }))} className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono" dir="ltr" style={inputStyle} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>النبذة التعريفية</label>
@@ -847,6 +842,97 @@ function SubscribersTab() {
               </div>
             </motion.div>
           ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+/* ====== Media Library Tab ====== */
+function MediaLibraryTab() {
+  const { mediaLibrary, addMedia, removeMedia } = useStore();
+  const [filter, setFilter] = useState<'all' | 'image' | 'video' | 'file'>('all');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const filtered = filter === 'all' ? mediaLibrary : mediaLibrary.filter(m => m.type === filter);
+
+  const images = mediaLibrary.filter(m => m.type === 'image').length;
+  const videos = mediaLibrary.filter(m => m.type === 'video').length;
+  const files = mediaLibrary.filter(m => m.type === 'file').length;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+        مكتبة الوسائط
+      </h2>
+      <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>
+        ارفع الصور والفيديوهات والملفات الإلكترونية وانسخ كودها لإدراجها في المقالات
+      </p>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {[
+          { num: mediaLibrary.length, label: 'الكل', icon: <Upload size={16} />, color: 'text-gold', f: 'all' as const },
+          { num: images, label: 'صور', icon: <Camera size={16} />, color: 'text-green-500', f: 'image' as const },
+          { num: videos, label: 'فيديو', icon: <Film size={16} />, color: 'text-purple-500', f: 'video' as const },
+          { num: files, label: 'ملفات', icon: <FileDoc size={16} />, color: 'text-blue-500', f: 'file' as const },
+        ].map((s, i) => (
+          <button
+            key={i}
+            onClick={() => setFilter(s.f)}
+            className={`glass-card rounded-xl p-3 text-center transition-all ${filter === s.f ? 'ring-2 ring-gold/40' : ''}`}
+          >
+            <div className={`${s.color} flex justify-center mb-1`}>{s.icon}</div>
+            <span className="text-lg font-bold block" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{s.num}</span>
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Upload Section */}
+      <div className="mb-8">
+        <MediaUploader
+          onUpload={(media) => addMedia(media)}
+          accept="all"
+          label="رفع ملف جديد"
+          hint="صور، فيديوهات، ملفات إلكترونية"
+        />
+      </div>
+
+      {/* How to use */}
+      <div className="p-4 rounded-xl mb-6 text-xs" style={{ background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
+        <p className="font-bold mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>📋 كيف تستخدم الوسائط في المقالات:</p>
+        <ol className="space-y-1 list-decimal list-inside">
+          <li>ارفع الملف من هنا (صورة أو فيديو أو ملف)</li>
+          <li>اضغط زر <strong className="text-gold">النسخ</strong> 📋 على البطاقة</li>
+          <li>سيتم نسخ كود HTML تلقائياً</li>
+          <li>الصقه في محتوى المقال عند التعديل أو الإنشاء</li>
+        </ol>
+        <div className="mt-3 p-2 rounded-lg font-mono text-xs" dir="ltr" style={{ background: 'var(--bg-primary)' }}>
+          صورة: <span className="text-green-500">{'<img src="..." alt="..." />'}</span><br />
+          فيديو: <span className="text-purple-500">{'<video src="..." controls></video>'}</span><br />
+          ملف: <span className="text-blue-500">{'<a href="..." download>اسم الملف</a>'}</span>
+        </div>
+      </div>
+
+      {/* Media Grid */}
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filtered.map((media) => (
+            <MediaCard
+              key={media.id}
+              media={media}
+              onRemove={() => removeMedia(media.id)}
+              onCopyCode={() => { setCopiedId(media.id); setTimeout(() => setCopiedId(null), 2000); }}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12 glass-card rounded-2xl">
+          <Upload size={32} className="text-gold mx-auto mb-3 opacity-40" />
+          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+            {filter === 'all' ? 'لا توجد وسائط بعد. ارفع أول ملف!' : `لا توجد ${filter === 'image' ? 'صور' : filter === 'video' ? 'فيديوهات' : 'ملفات'} بعد`}
+          </p>
         </div>
       )}
     </motion.div>

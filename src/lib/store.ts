@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Article, Author, Category } from './data';
 import { articles as defaultArticles, author as defaultAuthor, categories as defaultCategories } from './data';
+import type { MediaItem } from '../components/MediaUploader';
+
+export type { MediaItem };
 
 export interface Subscriber {
   id: string;
@@ -14,6 +17,7 @@ interface SiteStore {
   author: Author;
   categories: Category[];
   subscribers: Subscriber[];
+  mediaLibrary: MediaItem[];
   isAdminAuth: boolean;
   adminPassword: string;
 
@@ -39,6 +43,10 @@ interface SiteStore {
   addSubscriber: (email: string) => { success: boolean; message: string };
   removeSubscriber: (id: string) => void;
 
+  // Media
+  addMedia: (media: MediaItem) => void;
+  removeMedia: (id: string) => void;
+
   // Backup
   exportData: () => string;
   importData: (json: string) => boolean;
@@ -61,6 +69,7 @@ export const useStore = create<SiteStore>()(
       author: defaultAuthor,
       categories: defaultCategories,
       subscribers: [],
+      mediaLibrary: [],
       isAdminAuth: false,
       adminPassword: 'adeeb2025',
 
@@ -130,9 +139,15 @@ export const useStore = create<SiteStore>()(
       removeSubscriber: (id: string) =>
         set(state => ({ subscribers: state.subscribers.filter(s => s.id !== id) })),
 
+      addMedia: (media: MediaItem) =>
+        set(state => ({ mediaLibrary: [media, ...state.mediaLibrary] })),
+
+      removeMedia: (id: string) =>
+        set(state => ({ mediaLibrary: state.mediaLibrary.filter(m => m.id !== id) })),
+
       exportData: () => {
-        const { articles, author, categories, subscribers } = get();
-        return JSON.stringify({ articles, author, categories, subscribers, exportDate: new Date().toISOString(), version: '1.1' }, null, 2);
+        const { articles, author, categories, subscribers, mediaLibrary } = get();
+        return JSON.stringify({ articles, author, categories, subscribers, mediaLibrary, exportDate: new Date().toISOString(), version: '1.2' }, null, 2);
       },
 
       importData: (json: string) => {
@@ -144,6 +159,7 @@ export const useStore = create<SiteStore>()(
               author: data.author,
               categories: data.categories,
               subscribers: data.subscribers || [],
+              mediaLibrary: data.mediaLibrary || [],
             });
             return true;
           }
@@ -154,7 +170,7 @@ export const useStore = create<SiteStore>()(
       },
 
       resetToDefaults: () => {
-        set({ articles: defaultArticles, author: defaultAuthor, categories: defaultCategories, subscribers: [] });
+        set({ articles: defaultArticles, author: defaultAuthor, categories: defaultCategories, subscribers: [], mediaLibrary: [] });
       },
 
       getArticleBySlug: (slug: string) => get().articles.find(a => a.slug === slug),
@@ -183,6 +199,7 @@ export const useStore = create<SiteStore>()(
         author: state.author,
         categories: state.categories,
         subscribers: state.subscribers,
+        mediaLibrary: state.mediaLibrary,
         adminPassword: state.adminPassword,
       }),
     }
