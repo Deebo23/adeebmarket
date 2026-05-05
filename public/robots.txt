@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/login
+
+Sitemap: https://adeebmarket26.vercel.app/sitemap.xml

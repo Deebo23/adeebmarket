@@ -6,22 +6,22 @@ import { useStore } from '../lib/store';
 
 export default function AboutPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
-  const { author, articles } = useStore();
+  const { author, articles, siteSettings: s } = useStore();
 
   const values = [
-    { icon: <Target size={28} />, title: 'الرسالة', desc: 'تقديم محتوى عربي أصيل وعالي الجودة في مجالات التسويق الرقمي والتقنية وريادة الأعمال، لمساعدة رواد الأعمال العرب على النجاح.' },
-    { icon: <Eye size={28} />, title: 'الرؤية', desc: 'أن نكون المرجع الأول للمحتوى الرقمي العربي الاحترافي، ومنصة يثق بها المحترفون والمبتدئون على حد سواء.' },
-    { icon: <Lightbulb size={28} />, title: 'الابتكار', desc: 'نؤمن بأن الابتكار هو مفتاح النجاح. نسعى دائماً لتقديم محتوى مبتكر وأفكار جديدة تواكب التطورات العالمية.' },
-    { icon: <Users size={28} />, title: 'المجتمع', desc: 'نبني مجتمعاً عربياً رقمياً متعاوناً يتشارك المعرفة والخبرات لتحقيق النمو المشترك.' },
+    { icon: <Target size={28} />, title: 'الرسالة', desc: s.missionText },
+    { icon: <Eye size={28} />, title: 'الرؤية', desc: s.visionText },
+    { icon: <Lightbulb size={28} />, title: 'الابتكار', desc: s.innovationText },
+    { icon: <Users size={28} />, title: 'المجتمع', desc: s.communityText },
   ];
 
   return (
     <div className="pt-24 sm:pt-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="mb-6"><Breadcrumbs items={[{ label: 'من نحن' }]} /></div>
+        <div className="mb-6"><Breadcrumbs items={[{ label: s.navAbout }]} /></div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <h1 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>من <span className="text-gradient">نحن؟</span></h1>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)', lineHeight: 1.8 }}>أديب ماركت هي مجلة رقمية عربية احترافية أسسها Adeeb Ali بهدف إثراء المحتوى العربي في مجالات التسويق الرقمي والذكاء الاصطناعي وريادة الأعمال.</p>
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>{s.aboutTitle.includes('؟') ? <>{s.aboutTitle.replace('؟', '')} <span className="text-gradient">؟</span></> : s.aboutTitle}</h1>
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)', lineHeight: 1.8 }}>{s.aboutDescription}</p>
         </motion.div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
           {values.map((v, i) => (
@@ -40,7 +40,7 @@ export default function AboutPage() {
           <p className="max-w-xl mx-auto" style={{ color: 'var(--text-secondary)', lineHeight: 1.8 }}>{author.bio}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16">
-          {[{ num: `${articles.length}+`, label: 'مقال منشور' }, { num: '15K+', label: 'قارئ شهري' }, { num: '6', label: 'تصنيفات' }, { num: '3K+', label: 'مشترك نشرة' }].map((stat, i) => (
+          {[{ num: s.stat1, label: s.stat1Label }, { num: s.stat2, label: s.stat2Label }, { num: s.stat3, label: s.stat3Label }, { num: s.stat4, label: s.stat4Label }].map((stat, i) => (
             <div key={i} className="glass-card rounded-2xl p-6 text-center">
               <span className="text-3xl font-bold text-gold block mb-1" style={{ fontFamily: 'var(--font-heading)' }}>{stat.num}</span>
               <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{stat.label}</span>

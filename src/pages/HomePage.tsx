@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, TrendingUp, Sparkles, Flame } from 'lucide-react';
+import { ArrowLeft, Clock, TrendingUp, Sparkles, Flame, Gift, Download, Star } from 'lucide-react';
 import ArticleCard from '../components/ArticleCard';
 import Newsletter from '../components/Newsletter';
 import { useStore } from '../lib/store';
+import { products } from '../lib/products';
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -68,12 +69,7 @@ export default function HomePage() {
             </motion.div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featured.map((article, i) => (
-                <motion.div
-                  key={article.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                >
+                <motion.div key={article.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: i * 0.1 }}>
                   <ArticleCard article={article} />
                 </motion.div>
               ))}
@@ -94,13 +90,7 @@ export default function HomePage() {
             </motion.div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {trending.map((article, i) => (
-                <motion.div
-                  key={article.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                >
+                <motion.div key={article.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}>
                   <ArticleCard article={article} variant="horizontal" />
                 </motion.div>
               ))}
@@ -112,12 +102,7 @@ export default function HomePage() {
       {/* Latest Articles */}
       <section className="py-8 sm:py-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center justify-between mb-8"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-between mb-8">
             <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
               <TrendingUp size={22} className="text-sky-accent" />
               أحدث المقالات
@@ -128,14 +113,46 @@ export default function HomePage() {
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {latest.map((article, i) => (
-              <motion.div
-                key={article.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
-              >
+              <motion.div key={article.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }}>
                 <ArticleCard article={article} />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Free Products */}
+      <section className="py-8 sm:py-12 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-between mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+              <Gift size={22} className="text-gold" />
+              منتجات رقمية مجانية
+            </h2>
+            <Link to="/products" className="text-sm font-medium text-gold hover:text-gold-light transition-colors flex items-center gap-1" style={{ fontFamily: 'var(--font-heading)' }}>
+              عرض الكل <ArrowLeft size={16} />
+            </Link>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.slice(0, 3).map((product, i) => (
+              <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                <Link to={`/products/${product.slug}`} className="glass-card rounded-2xl overflow-hidden group flex flex-col h-full">
+                  <div className="relative h-52 overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+                    <img src={product.image} alt={product.title} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
+                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-bold bg-green-500 text-white">مجاني</span>
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <span className="text-xs font-medium text-gold mb-2" style={{ fontFamily: 'var(--font-heading)' }}>{product.category}</span>
+                    <h3 className="text-sm font-bold mb-2 line-clamp-2 group-hover:text-gold transition-colors" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
+                      {product.title}
+                    </h3>
+                    <p className="text-xs line-clamp-2 mb-3 flex-1" style={{ color: 'var(--text-secondary)' }}>{product.description}</p>
+                    <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      <span className="flex items-center gap-1"><Download size={12} /> {product.downloads.toLocaleString()}</span>
+                      <span className="flex items-center gap-1"><Star size={12} className="text-yellow-500 fill-yellow-500" /> {product.rating}</span>
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>
@@ -145,28 +162,13 @@ export default function HomePage() {
       {/* Categories */}
       <section className="py-8 sm:py-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-xl sm:text-2xl font-bold mb-8 text-center"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
+          <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-xl sm:text-2xl font-bold mb-8 text-center" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
             تصفح حسب التصنيف
           </motion.h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {categories.map((cat, i) => (
-              <motion.div
-                key={cat.slug}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-              >
-                <Link
-                  to={`/category/${cat.slug}`}
-                  className="glass-card rounded-2xl p-5 text-center block group"
-                >
+              <motion.div key={cat.slug} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.05 }}>
+                <Link to={`/category/${cat.slug}`} className="glass-card rounded-2xl p-5 text-center block group">
                   <span className="text-3xl block mb-3">{cat.icon}</span>
                   <h3 className="text-sm font-bold mb-1 group-hover:text-gold transition-colors" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
                     {cat.name}
